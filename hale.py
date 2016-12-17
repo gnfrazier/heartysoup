@@ -48,10 +48,14 @@ def get_locations(site):
 
     soup = get_soup(site)
      #extract option tag with value="matching string"
+    storeid = soup.find(id="our-menu").find_all('option')
+
     locs = soup.select('option[value^="/menu/?location="]')
     n = len(locs)
      #value iterable from BS4
     locations = [value['value'] for value in locs]
+    names = [storeid[i].text for i in range(n)]
+    #print (locations, names)
     return locations
 
 def get_menu_items(soup):
