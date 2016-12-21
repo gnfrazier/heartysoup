@@ -25,21 +25,21 @@ import csv
 import os
 import string
 
-def get_html(url):
+def get_soup(url):
 
     html = requests.get(url)
 
     if html.status_code == 200:
         # soup = BeautifulSoup(html.text, "html.parser") #changed to own function
-        #soup = extract_soup(html)
-        return html
+        soup = extract_soup(html)
+        return soup
     else:
         response = html.status_code
         print('{} returned a {} status code.'.format(url, response))
-        break
+        return none
 
 def extract_soup(html):
-        soup = BeautifulSoup(html, "html.parser")
+        soup = BeautifulSoup(html.text, "html.parser")
         return soup
 
 def get_locations(soup):
@@ -54,7 +54,9 @@ def get_locations(soup):
 def get_names(soup):
     #extract option tag with value="matching string"
     storeid = soup.find(id="our-menu").find_all('option')
+    n = len(storeid)
     names = [storeid[i].text for i in range(n)]
+    return names
 
 def get_menu_items(soup):
 
@@ -76,21 +78,21 @@ def form_url(site, loc):
 
     return url
 
-def write_menu(date, name, menu, path, file):
+def write_menu(date, sname, name, menu, path, file):
     file_name = path + file
     with open(file_name, "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
 
         for item, price in menu.items():
-            line = (date, name, item, price)
+            line = (date, sname, name, item, price)
             writer.writerow(line)
 
 def main():
     path = os.getcwd() + '/'
     date = arrow.now('US/Eastern').format('YYYY-MM-DD')
     site = 'https://www.haleandhearty.com'
-    html = get_html(site)
-    soup = extract_soup(html)
+    soup = get_soup(site)
+    #soup = extract_soup(html)
     locations = get_locations(soup)
     name = get_names(soup)
     for loc in locations:
