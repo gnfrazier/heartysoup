@@ -25,38 +25,36 @@ import csv
 import os
 import string
 
-def get_soup(url):
+def get_html(url):
 
     html = requests.get(url)
 
     if html.status_code == 200:
-        soup = BeautifulSoup(html.text, "html.parser") #changed to own function
+        # soup = BeautifulSoup(html.text, "html.parser") #changed to own function
         #soup = extract_soup(html)
-        return soup
+        return html
     else:
         response = html.status_code
         print('{} returned a {} status code.'.format(url, response))
-        return response
+        break
 
 def extract_soup(html):
         soup = BeautifulSoup(html, "html.parser")
         return soup
 
-
-
-def get_locations(site):
-
-    soup = get_soup(site)
-     #extract option tag with value="matching string"
-    storeid = soup.find(id="our-menu").find_all('option')
+def get_locations(soup):
 
     locs = soup.select('option[value^="/menu/?location="]')
     n = len(locs)
-     #value iterable from BS4
+    #value iterable from BS4
     locations = [value['value'] for value in locs]
-    names = [storeid[i].text for i in range(n)]
     #print (locations, names)
     return locations
+
+def get_names(soup):
+    #extract option tag with value="matching string"
+    storeid = soup.find(id="our-menu").find_all('option')
+    names = [storeid[i].text for i in range(n)]
 
 def get_menu_items(soup):
 
@@ -91,15 +89,18 @@ def main():
     path = os.getcwd() + '/'
     date = arrow.now('US/Eastern').format('YYYY-MM-DD')
     site = 'https://www.haleandhearty.com'
-    locations = get_locations(site)
+    html = get_html(site)
+    soup = extract_soup(html)
+    locations = get_locations(soup)
+    name = get_names(soup)
     for loc in locations:
         # loc = (value['value']) #value iterable from BS4
         #loc= ['17th-and-broadway'] #single loc for testing
         url = form_url(site, loc) #list value for testing
-        name = loc.strip(r'/menu/?location=')
+        sname = loc.strip(r'/menu/?location=')
         soup = get_soup(url)
         menu = get_menu_items(soup) #return dictionary
-        write_menu(date, name, menu, path, 'day-menu.csv')
+        write_menu(date, sname, name, menu, path, 'day-menu.csv')
         mcount = len(menu)
         print('Store {} has a menu of {} items.'.format(name, mcount))
 if __name__ == "__main__":
