@@ -94,13 +94,14 @@ def main():
     soup = get_soup(site)
     #soup = extract_soup(html)
     locations = get_locations(soup)
-    name = get_names(soup)
-    for loc in locations:
+    names = get_names(soup)
+    for i in locations:
         # loc = (value['value']) #value iterable from BS4
         #loc= ['17th-and-broadway'] #single loc for testing
         url = form_url(site, loc) #list value for testing
-        sname = loc.strip(r'/menu/?location=')
         soup = get_soup(url)
+        sname = loc[i].strip(r'/menu/?location=')
+        name = names[i]
         menu = get_menu_items(soup) #return dictionary
         write_menu(date, sname, name, menu, path, 'day-menu.csv')
         mcount = len(menu)
