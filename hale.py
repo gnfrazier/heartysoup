@@ -60,8 +60,8 @@ def get_menu_items(soup):
     prices = soup.find_all(class_="menu-item__price") #has tags
     n = len(items)
 
-    item_name = [items[i].text for i in range(n)]
-    item_price = [prices[i].text for i in range(n)]
+    item_name = [items[i].text for i in range(n)] #removes tags
+    item_price = [prices[i].text for i in range(n)] #removes tags
     strname = [item_name[i].strip() for i in range(n)] #strip newlines
     strprice = [item_price[i].strip() for i in range(n)] #strip newlines
     justprice = [strprice[i].strip('\n\n+') for i in range(n)] #remove extra /n bits
