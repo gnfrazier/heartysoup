@@ -4,7 +4,7 @@ URL is set
 
 get soup
     - get HTML using requests
-    - HTML to BeautifulSoup parser
+    - HTML to BeautifulSoup parser  
 
 get locations
     - pull out the location specific URLS from option value
