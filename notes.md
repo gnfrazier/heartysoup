@@ -3,19 +3,19 @@
 URL is set
 
 get soup
-    - get HTML using requests
-    - HTML to BeautifulSoup parser  
+- get HTML using requests  
+- HTML to BeautifulSoup parser  
 
 get locations
-    - pull out the location specific URLS from option value
+- pull out the location specific URLS from option value
 
 get names
-    - pull out location names from options
+- pull out location names from options
 
 roll through the location pages
-    - get soup
-    get menu items
-        - parse menu
+- get soup
+  get menu items
+  - parse menu
             - clean
         - is new item?
             unzip and unpickle datafile
