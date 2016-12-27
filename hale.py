@@ -9,10 +9,11 @@ import requests
 from bs4 import BeautifulSoup
 import arrow
 import time
-import collections
+from collections import namedtuple
 import csv
 import os
 import string
+
 
 def get_soup(url):
     """Check for a 200 response from the website and return parsed soup object."""
@@ -20,7 +21,8 @@ def get_soup(url):
     html = requests.get(url)
 
     if html.status_code == 200:
-        # soup = BeautifulSoup(html.text, "html.parser") #changed to own function
+        # soup = BeautifulSoup(html.text, "html.parser") #changed to own
+        # function
         soup = extract_soup(html)
         return soup
     else:
@@ -28,22 +30,25 @@ def get_soup(url):
         print('{} returned a {} status code.'.format(url, response))
         return none
 
+
 def extract_soup(html):
     """Extract the soup object from the passed HTML."""
 
     soup = BeautifulSoup(html.text, "html.parser")
     return soup
 
+
 def get_locations(soup):
     """Return a list of store location URL parameters."""
 
-    #extract option tag with value="matching string"
+    # extract option tag with value="matching string"
     locs = soup.select('option[value^="/menu/?location="]')
     n = len(locs)
-    #value iterable from BS4
+    # value iterable from BS4
     locations = [value['value'] for value in locs]
     #print (locations, names)
     return locations
+
 
 def get_names(soup):
     """Return a list of store location public names"""
@@ -53,20 +58,65 @@ def get_names(soup):
     names = [storeid[i].text for i in range(n)]
     return names
 
+
 def get_menu_items(soup):
     """Return a dictionary of key menu-items and value prices"""
 
-    items = soup.find_all(class_="menu-item__name") #has tags
-    prices = soup.find_all(class_="menu-item__price") #has tags
-    n = len(items)
+    items = clean(soup.find_all(class_="menu-item__name"))  # has tags
+    prices = clean(soup.find_all(class_="menu-item__price"))  # has tags
 
-    item_name = [items[i].text for i in range(n)] #removes tags
-    item_price = [prices[i].text for i in range(n)] #removes tags
-    strname = [item_name[i].strip() for i in range(n)] #strip newlines
-    strprice = [item_price[i].strip() for i in range(n)] #strip newlines
-    justprice = [strprice[i].strip('\n\n+') for i in range(n)] #remove extra /n bits
-    menu_items = dict(zip(strname, justprice)) #zip into dict with item:price
+    menu_items = dict(zip(items, prices))  # zip into dict with item:price
     return menu_items
+
+
+def add_new_items(soup):
+    info = soup.find_all(class_="md-info")
+    archive = get_archive()
+    first = date()
+    details = namedtuple(
+        'details', "name, desc, cal, ingred, tag, fact, first")
+    for item in info:
+        # extract and clean the name
+        name = cleana(item.find(class_="md-name"))
+        # check if new
+        if name not in archive:
+            # if new build tuple of attributes
+            desc = cleana(item.find(class_="menu-item__desc"))
+            cal = cleana(item.find(class_="menu-item__cals"))
+            ingred = cleana(item.find(class_="menu-item__ingredients"))
+            tag = cleana(item.find(class_="menu-item__tags"))
+            fact = cleana(item.find(class_="menu-item__nutrition-facts"))
+
+            detail = details(name, desc, cal, ingred, tag, fact, first)
+            archive[name] = detail
+
+            write_archive(archive)
+
+    return archive
+
+
+def clean(tagged):
+    """clean tags and new lines out of list of attributes"""
+
+    n = len(tagged)
+    untagged = [tagged[i].text for i in range(n)]  # strip tags
+    stripped = [untagged[i].strip() for i in range(n)]  # strip newlines
+    nolines = [stripped[i].strip('\n\n+')
+               for i in range(n)]  # rm extra /n bits
+
+    return nolines
+
+
+def cleana(tagged):
+    """clean tags and new lines out of single attribute"""
+    if tagged:
+        untagged = (tagged.text)  # strip tags
+        stripped = (untagged.strip())  # strip newlines
+        nolines = (stripped.strip('\n\n+'))  # rm extra /n bits
+    else:
+        nolines = "None"
+    return nolines
+
 
 def form_url(site, loc):
     """Concatenate site URI with location specific parameters"""
@@ -74,6 +124,7 @@ def form_url(site, loc):
     url = site + loc
 
     return url
+
 
 def write_menu(date, sname, name, menu, path, file):
     """Append data to output file passed as path, file"""
@@ -86,9 +137,33 @@ def write_menu(date, sname, name, menu, path, file):
             line = (date, sname, name, item, price)
             writer.writerow(line)
 
+
+def get_archive():
+    """Opens the existing datafile and returns it as dictionary"""
+
+    try:
+        with open('itemfile.json')as infile:
+            archive = json.load(infile)
+    except:
+        archive = {}
+    return archive
+
+
+def write_archive(archive):
+    """Writes updated archive dict to datafile in json format"""
+
+    with open('itemfile.json', 'a')as outfile:
+        json.dump(archive, outfile)
+
+
+def date():
+    date = arrow.now('US/Eastern').format('YYYY-MM-DD')
+    return date
+
+
 def main():
     path = os.getcwd() + '/'
-    date = arrow.now('US/Eastern').format('YYYY-MM-DD')
+    date = date()
     site = 'https://www.haleandhearty.com'
     soup = get_soup(site)
     locations = get_locations(soup)
@@ -96,14 +171,15 @@ def main():
 
     for i in range(len(locations)):
         """Iterate through locations list, append menu to output file."""
-        
+
         loc = locations[i]
-        url = form_url(site, loc) #list value for testing
+        url = form_url(site, loc)
         soup = get_soup(url)
         sname = loc.strip(r'/menu/?location=')
         name = names[i]
-        menu = get_menu_items(soup) #return dictionary
+        menu = get_menu_items(soup)  # return dictionary
         write_menu(date, sname, name, menu, path, 'day-menu.csv')
+        add_new_items(soup)
         mcount = len(menu)
         print('Store {} has a menu of {} items.'.format(name, mcount))
 

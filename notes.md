@@ -1,6 +1,11 @@
 ## Flow for hale.py
 
-URL is set
+URL is set  
+
+config data (part of main?)  
+    set up namedtuple  
+    unzip and unpickle datafile  
+    return datafile and namedtuple  
 
 get soup  
 get HTML using requests  
@@ -18,16 +23,17 @@ get soup
   parse menu  
     clean  
         is new item?  
-            unzip and unpickle datafile  
+             
             yes add item data  
                 parse tags  
                 parse ingredients  
                 parse calories  
                 parse nutrition facts (optional?)
                 add first date  
-                repickle and rezip datafile  
+                  
             no pass  
         parse price  
             clean  
         zip into dictionary  
     write menu to csv  
+repickle and rezip datafile  
