@@ -13,6 +13,7 @@ from collections import namedtuple
 import csv
 import os
 import string
+import json
 
 
 def get_soup(url):
@@ -163,7 +164,7 @@ def date():
 
 def main():
     path = os.getcwd() + '/'
-    date = date()
+    today = date()
     site = 'https://www.haleandhearty.com'
     soup = get_soup(site)
     locations = get_locations(soup)
@@ -178,7 +179,7 @@ def main():
         sname = loc.strip(r'/menu/?location=')
         name = names[i]
         menu = get_menu_items(soup)  # return dictionary
-        write_menu(date, sname, name, menu, path, 'day-menu.csv')
+        write_menu(today, sname, name, menu, path, 'day-menu.csv')
         add_new_items(soup)
         mcount = len(menu)
         print('Store {} has a menu of {} items.'.format(name, mcount))
