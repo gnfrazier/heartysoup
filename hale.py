@@ -146,10 +146,11 @@ def read_itemfile():
     """Open existing itemlist and return as tablib data object"""
 
     try:
-        itemlist = Dataset().load(open('itemfile.csv').read())
+        itemlist = tablib.Dataset().load(open('itemfile.csv').read())
     except:
-        # itemlist = setup_itemfile()
-        print('Unable to read itemfile')
+        itemlist = setup_itemfile()
+        print('Unable to read itemfile. Creating new itemfile')
+
     return itemlist
 
 
@@ -157,7 +158,7 @@ def write_itemfile(itemlist):
     """Write data file as .csv"""
 
     try:
-        with open('itemfile.csv', 'a') as f:
+        with open('itemfile.csv', 'w') as f:
             f.write(itemlist.csv)
         return True
     except:
