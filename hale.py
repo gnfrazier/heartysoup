@@ -9,11 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 import arrow
 import time
-from collections import namedtuple
 import csv
 import os
 import string
-import json
+import tablib
 
 
 def get_soup(url):
@@ -22,10 +21,9 @@ def get_soup(url):
     html = requests.get(url)
 
     if html.status_code == 200:
-        # soup = BeautifulSoup(html.text, "html.parser") #changed to own
-        # function
         soup = extract_soup(html)
         return soup
+
     else:
         response = html.status_code
         print('{} returned a {} status code.'.format(url, response))
@@ -47,7 +45,7 @@ def get_locations(soup):
     n = len(locs)
     # value iterable from BS4
     locations = [value['value'] for value in locs]
-    #print (locations, names)
+    # print (locations, names)
     return locations
 
 
@@ -72,48 +70,53 @@ def get_menu_items(soup):
 
 def add_new_items(soup):
     info = soup.find_all(class_="md-info")
-    archive = get_archive()
+    itemlist = read_itemfile()
     first = date()
-    details = namedtuple(
-        'details', "name, desc, cal, ingred, tag, fact, first")
     for item in info:
         # extract and clean the name
         name = cleana(item.find(class_="md-name"))
+        namelist = itemlist['Name']
         # check if new
-        if name not in archive:
-            # if new build tuple of attributes
+        if name not in namelist:
+            # if new add attributes to itemfile
             desc = cleana(item.find(class_="menu-item__desc"))
             cal = cleana(item.find(class_="menu-item__cals"))
             ingred = cleana(item.find(class_="menu-item__ingredients"))
             tag = cleana(item.find(class_="menu-item__tags"))
             fact = cleana(item.find(class_="menu-item__nutrition-facts"))
 
-            detail = details(name, desc, cal, ingred, tag, fact, first)
-            archive[name] = detail
+            itemlist.append([name, desc, cal, ingred, tag, fact, first])
+            print('Item added')
+            print(len(itemlist))
+    write_itemfile(itemlist)
 
-            write_archive(archive)
-
-    return archive
+    return itemlist
 
 
 def clean(tagged):
     """clean tags and new lines out of list of attributes"""
 
     n = len(tagged)
-    untagged = [tagged[i].text for i in range(n)]  # strip tags
-    stripped = [untagged[i].strip() for i in range(n)]  # strip newlines
-    nolines = [stripped[i].strip('\n\n+')
-               for i in range(n)]  # rm extra /n bits
+    # strip tags
+    untagged = [tagged[i].text for i in range(n)]
 
+    # replace newlines with space
+    stripped = [untagged[i].replace(
+        '\n\n+', ' ').replace('\n', ' ') for i in range(n)]
+
+    # strip trailing spaces
+    nolines = [stripped[i].strip() for i in range(n)]
     return nolines
 
 
 def cleana(tagged):
     """clean tags and new lines out of single attribute"""
+
     if tagged:
         untagged = (tagged.text)  # strip tags
-        stripped = (untagged.strip())  # strip newlines
-        nolines = (stripped.strip('\n\n+'))  # rm extra /n bits
+        # strip newlines
+        stripped = (untagged.replace('\n\n+', ' ').replace('\n', ' '))
+        nolines = (stripped.strip())  # strip trailing spaces
     else:
         nolines = "None"
     return nolines
@@ -139,22 +142,36 @@ def write_menu(date, sname, name, menu, path, file):
             writer.writerow(line)
 
 
-def get_archive():
-    """Opens the existing datafile and returns it as dictionary"""
+def read_itemfile():
+    """Open existing itemlist and return as tablib data object"""
 
     try:
-        with open('itemfile.json')as infile:
-            archive = json.load(infile)
+        itemlist = Dataset().load(open('itemfile.csv').read())
     except:
-        archive = {}
-    return archive
+        # itemlist = setup_itemfile()
+        print('Unable to read itemfile')
+    return itemlist
 
 
-def write_archive(archive):
-    """Writes updated archive dict to datafile in json format"""
+def write_itemfile(itemlist):
+    """Write data file as .csv"""
 
-    with open('itemfile.json', 'a')as outfile:
-        json.dump(archive, outfile)
+    try:
+        with open('itemfile.csv', 'a') as f:
+            f.write(itemlist.csv)
+        return True
+    except:
+        return False
+
+
+def setup_itemfile():
+    """Only if itemlist.csv can not be opened, set up new itemlist"""
+
+    itemlist = tablib.Dataset()
+    itemlist.headers = ['Name', 'Description', 'Calories',
+                        'Ingredients', 'Tags', 'Nutrition Facts', 'First Recorded']
+
+    return itemlist
 
 
 def date():
