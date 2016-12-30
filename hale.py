@@ -102,8 +102,11 @@ def clean(tagged):
     untagged = [tagged[i].text for i in range(n)]
 
     # replace newlines with space
-    stripped = [untagged[i].replace(
-        '\n\n+', ' ').replace('\n', ' ') for i in range(n)]
+    stripped = [untagged[i]
+                .replace('\n\n+', ' ')
+                .replace('\n', ' ')
+                .replace('\r', ' ')
+                for i in range(n)]
 
     # strip trailing spaces
     nolines = [stripped[i].strip() for i in range(n)]
@@ -116,8 +119,12 @@ def cleana(tagged):
     if tagged:
         untagged = (tagged.text)  # strip tags
         # strip newlines
-        stripped = (untagged.replace('\n\n+', ' ').replace('\n', ' '))
+        stripped = (untagged
+                    .replace('\n\n+', ' ')
+                    .replace('\n', ' ')
+                    .replace('\r', ' '))
         nolines = (stripped.strip())  # strip trailing spaces
+
     else:
         nolines = "None"
     return nolines
