@@ -78,6 +78,7 @@ def add_new_items(soup):
         namelist = itemlist['Name']
         # check if new
         if name not in namelist:
+
             # if new add attributes to itemfile
             desc = cleana(item.find(class_="menu-item__desc"))
             cal = cleana(item.find(class_="menu-item__cals"))
