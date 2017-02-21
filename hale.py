@@ -49,6 +49,19 @@ def get_locations(soup):
     return locations
 
 
+def new_get_locations(soup):
+    store = soup.find_all(class_="locations-list__location")
+    locations = []
+    for location in store:
+        loc = str(location)
+        locsoup = BeautifulSoup(loc, "html.parser")
+
+        for link in locsoup.find_all('a'):
+            url = link.get('href')
+            locations.append(url)
+    return locations
+
+
 def get_names(soup):
     """Return a list of store location public names"""
 
@@ -56,6 +69,15 @@ def get_names(soup):
     n = len(storeid)
     names = [storeid[i].text for i in range(n)]
     return names
+
+
+def new_get_names(soup):
+    store = soup.find_all(class_="locations-list__location")
+    names = []
+    for location in store:
+        name = extract_soup(location)
+        names.append(name)
+    return clean(names)
 
 
 def get_menu_items(soup):
