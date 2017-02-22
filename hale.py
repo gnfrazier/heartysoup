@@ -213,10 +213,10 @@ def date():
 def main():
     path = os.getcwd() + '/'
     today = date()
-    site = 'https://www.haleandhearty.com'
+    site = 'https://www.haleandhearty.com/locations/#main'
     soup = get_soup(site)
-    locations = get_locations(soup)
-    names = get_names(soup)
+    locations = new_get_locations(soup)
+    names = new_get_names(soup)
 
     for i in range(len(locations)):
         """Iterate through locations list, append menu to output file."""
