@@ -213,8 +213,10 @@ def date():
 def main():
     path = os.getcwd() + '/'
     today = date()
-    site = 'https://www.haleandhearty.com/locations/#main'
-    soup = get_soup(site)
+    site = 'https://www.haleandhearty.com'
+    home = '/locations/#main'
+    url = form_url(site, home)
+    soup = get_soup(url)
     locations = new_get_locations(soup)
     names = new_get_names(soup)
 
