@@ -1,5 +1,6 @@
 #data file for this project
 day-menu.csv
+itemfile.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
