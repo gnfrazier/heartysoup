@@ -1,6 +1,7 @@
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
-Scrape the menu from Hale and Hearty Soups website for fun on a cold winter day.
+Scrape the menu from Hale and Hearty Soups website on a cold winter day.
 
 Outputs the day's menu by location with prices.
 """
@@ -8,15 +9,13 @@ Outputs the day's menu by location with prices.
 import requests
 from bs4 import BeautifulSoup
 import arrow
-import time
 import csv
 import os
-import string
 import tablib
 
 
 def get_soup(url):
-    """Check for a 200 response from the website and return parsed soup object."""
+    """Check for a 200 response from the website and return soup object."""
 
     html = requests.get(url)
 
@@ -27,7 +26,7 @@ def get_soup(url):
     else:
         response = html.status_code
         print('{} returned a {} status code.'.format(url, response))
-        return none
+        return None
 
 
 def extract_soup(html):
@@ -42,7 +41,6 @@ def get_locations(soup):
 
     # extract option tag with value="matching string"
     locs = soup.select('option[value^="/menu/?location="]')
-    n = len(locs)
     # value iterable from BS4
     locations = [value['value'] for value in locs]
     # print (locations, names)
@@ -200,7 +198,8 @@ def setup_itemfile():
 
     itemlist = tablib.Dataset()
     itemlist.headers = ['Name', 'Description', 'Calories',
-                        'Ingredients', 'Tags', 'Nutrition Facts', 'First Recorded']
+                        'Ingredients', 'Tags', 'Nutrition Facts',
+                        'First Recorded']
 
     return itemlist
 
