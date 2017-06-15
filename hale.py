@@ -12,8 +12,6 @@ import arrow
 import csv
 import os
 import tablib
-import time
-import schedule
 
 
 def get_soup(url):
@@ -238,7 +236,4 @@ def main():
 
 if __name__ == "__main__":
 
-    schedule.every().day.at("08:52").do(main)
-    while True:
-        schedule.run_pending()
-        time.sleep(30)
+    main()
